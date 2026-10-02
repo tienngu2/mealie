@@ -360,3 +360,47 @@ tasks:
       - defer: { task: e2e:stop-server }
       - task: e2e:test
         vars: { PREVENT_REPORT_OPEN: true }
+
+  # ---------------------------------------------------------------------------
+  # Harness tasks (agent-facing validation entry points). See docs/agents/.
+  # ---------------------------------------------------------------------------
+  validate:node:
+    desc: fails unless Node.js is the major version used by upstream CI (24)
+    silent: true
+    cmds:
+      - |
+        node -e "process.exit(process.versions.node.split('.')[0] === '24' ? 0 : 1)" || {
+          echo "ERROR: Node $(node -v) found, Node 24 required (Node 26 breaks jsdom localStorage tests)."
+          echo "Fix: mise exec node@24 -- task validate   (see .node-version)"
+          exit 1
+        }
+
+  py:format:check:
+    desc: checks python formatting without rewriting files
+    cmds:
+      - uv run ruff format --check .
+
+  ui:test:ci:
+    desc: runs the frontend tests once and exits (ui:test is watch mode)
+    dir: frontend
+    cmds:
+      - pnpm test:ci
+
+  validate:
+    desc: ENFORCED validation, run before every commit (format, lint, types, backend + frontend tests)
+    cmds:
+      - task: validate:node
+      - task: py:format:check
+      - task: py:lint
+      - task: py:mypy
+      - task: py:test
+      - task: ui:lint
+      - task: ui:test:ci
+
+  security:
+    desc: REPORT-ONLY security scans (bandit, pip-audit, pnpm audit, semgrep); findings are logged, never block
+    cmds:
+      - uvx bandit -r mealie -q --exit-zero || true
+      - uv export --frozen --no-hashes --no-emit-project -o /tmp/mealie-audit-reqs.txt > /dev/null && uvx pip-audit -r /tmp/mealie-audit-reqs.txt --no-deps --disable-pip || true
+      - cd frontend && pnpm audit --prod || true
+      - if command -v semgrep > /dev/null 2>&1; then semgrep scan --config auto --exclude node_modules --exclude apm_modules --exclude .agents --exclude .claude --exclude .codex --exclude .cursor --exclude .venv . || true; else echo "WARNING - semgrep not installed, SAST skipped (brew install semgrep)"; fi

@@ -151,6 +151,13 @@ exclude = [
   "dist",
   "node_modules",
   "venv",
+  # APM-managed third-party agent skills (see docs/agents/conventions/apm-management.md)
+  ".agents",
+  ".claude",
+  ".codex",
+  ".cursor",
+  ".github/skills",
+  "apm_modules",
 ]
 
 [tool.ruff.lint.isort]

@@ -8,6 +8,21 @@ Mealie is a self-hosted recipe manager, meal planner, and shopping list applicat
 - **Development:** Frontend (port 3000) and backend (port 9000) run as separate processes
 - **Production:** Frontend is statically generated and served via FastAPI's SPA module (`mealie/routes/spa/`) in a single container
 
+## Repository Map
+
+```text
+mealie/            FastAPI backend (routes/, services/, repos/, db/models/, schema/, alembic/)
+frontend/          Nuxt 4 + Vue 3 app (app/pages, components, composables, lib/api)
+tests/             pytest: unit_tests/, integration_tests/, multitenant_tests/, e2e/ (Playwright)
+dev/               code generation (dev/code-generation/) and local dev data (dev/data/)
+docker/            Dockerfile and compose files
+docs/docs/         published MkDocs site (upstream user and contributor docs)
+docs/agents/       agent-facing docs: workflow, architecture, validation, security, tech debt
+openspec/          specs/ and changes/ for spec-driven development
+.agents/ .claude/ .cursor/ .github/skills/ .github/prompts/   managed by APM and OpenSpec; do not edit
+Taskfile.yml       the command surface (task validate, task security, task py, task ui, ...)
+```
+
 ## Architecture & Key Patterns
 
 ### Backend Architecture (mealie/)
@@ -93,6 +108,30 @@ task py:postgres        # Run backend with PostgreSQL config
 task docker:prod        # Build and run production Docker compose
 ```
 
+## Harness: Validation, Specs, and Environment
+
+**Definition of done for any change: `task validate` exits 0.** It is enforced and runs: Node 24 guard, `ruff format --check`, `ruff check`, `mypy`, `pytest`, ESLint (`--max-warnings=0`), and `vitest` (once). Details: `docs/agents/validation/local-validation-workflow.md`.
+
+```bash
+task validate        # ENFORCED: run before every commit and before saying "done"
+task security        # REPORT-ONLY: bandit, pip-audit, pnpm audit, semgrep. Must not add new findings
+task ui:test:ci      # frontend tests once (task ui:test is WATCH MODE and never exits)
+task py:format:check # format check without rewriting (task py:format / py:check rewrite files)
+```
+
+**Environment rules**
+- Frontend and `task validate` need **Node 24** (`.node-version`, `mise.toml`). Node 26 fails 6 `use-unit-system` tests. If your Node differs: `mise exec node@24 -- task validate`.
+- `unset VIRTUAL_ENV` if a parent directory has a `.venv`; otherwise `uv`/pytest pick the wrong environment.
+- Do not run commands that block forever (watch modes, dev servers) in the foreground. Start servers in the background with output redirected to a log file.
+- Never touch third-party skill folders (`.agents/`, `.claude/`, `.codex/`, `.cursor/`, `.github/skills/`); they are managed by APM and OpenSpec.
+
+**Spec-driven workflow (OpenSpec, `openspec/`)**
+- Non-trivial features start with `/opsx-propose` (or `/opsx-explore`); then `/opsx-apply`, `/opsx-verify`, `/opsx-archive` (Claude Code uses `/opsx:...`, Codex uses `$openspec-...`).
+- Project context and per-artifact rules are in `openspec/config.yaml`.
+- Every task list ends with "run `task validate`". UI changes also need a browser check on http://localhost:3000.
+
+**Docs for agents** live in `docs/agents/` (not published to the MkDocs site): workflow, architecture, dev environment (including `common-issues.md`), conventions, validation, security, and `tech-debt.md`. Log new gotchas and debt there instead of fixing unrelated things inline.
+
 ## Critical Development Practices
 
 ### Python Backend
@@ -157,7 +196,7 @@ task docker:prod        # Build and run production Docker compose
 
 3. **Pre-commit hooks:** Install via `task setup:py`, enforces Ruff formatting/linting
 
-4. **Testing before PRs:** Run `task py:check` and `task ui:check` before submitting PRs
+4. **Testing before PRs:** Run `task validate` (covers `task py:check` and `task ui:check` without rewriting files or hanging in watch mode)
 
 ## Pull Request Best Practices
 

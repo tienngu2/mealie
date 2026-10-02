@@ -1,0 +1,4 @@
+# Pins the toolchain used by `task validate`. Upstream CI runs Node 24; Node 26
+# breaks the jsdom localStorage tests (see docs/agents/dev-environment/common-issues.md).
+[tools]
+node = "24"

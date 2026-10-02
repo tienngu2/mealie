@@ -1,0 +1,21 @@
+name: mealie
+version: 1.0.0
+description: APM project for mealie
+author: Tien Nguyen
+# Which agent platforms to deploy to.
+# Resolution order: --target flag > this field > auto-detect from filesystem.
+# Accepted values: agent-skills, antigravity, claude, codex, copilot, cursor, gemini, grok-build, hermes, kiro, opencode, vscode, windsurf
+targets:
+  - claude
+  - copilot
+  - cursor
+  - codex
+dependencies:
+  apm:
+    - cisco-genai/awesome-cisco/skills/ai-native-assessment
+    - cisco-genai/awesome-cisco/skills/ai-harness-setup
+    - cisco-genai/awesome-cisco/packages/stack-python-uv#stack-python-uv-v1.0.5
+    - cisco-genai/awesome-cisco/packages/stack-javascript-typescript#stack-javascript-typescript-v1.0.5
+  mcp: []
+includes: auto
+scripts: {}

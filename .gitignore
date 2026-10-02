@@ -176,3 +176,7 @@ dev/code-generation/openapi.json
 .task/*
 .dev.env
 frontend/eslint.config.deprecated.js
+
+
+# APM dependencies
+apm_modules/

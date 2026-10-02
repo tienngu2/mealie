@@ -1,0 +1,61 @@
+schema: spec-driven
+
+context: |
+  Project: Mealie, a self-hosted recipe manager and meal planner (brownfield, upstream open source).
+  Backend: FastAPI + SQLAlchemy + Alembic, Python 3.14, uv. Repository-Service-Controller pattern,
+  everything scoped to group/household. SQLite by default, PostgreSQL supported.
+  Frontend: Nuxt 4, Vue 3, TypeScript, pnpm, Vitest. Node 24 (see .node-version).
+  Generated code (never hand-edit): frontend/app/lib/api/types/, mealie/schema/*/__init__.py.
+  Run `task dev:generate` after changing Pydantic schemas.
+  Translations: only edit en-US locale files (other locales are managed by Crowdin).
+  Validation: `task validate` (enforced) before every commit. See AGENTS.md and docs/agents/.
+  Conventional Commits for commit and PR titles.
+
+rules:
+  proposal:
+    - State which backend and frontend areas change, and whether a DB migration is needed.
+    - Include a Non-goals section.
+  tasks:
+    - Include tasks for tests (pytest and/or vitest) and a visual check in the browser for UI work.
+    - Include `task dev:generate` when Pydantic schemas change.
+    - Final task is always "run `task validate` and confirm it passes".
+
+operations:
+  apply:
+    guidance:
+      - Run `task validate` before declaring the change done; do not rely on partial test runs.
+      - Validate UI changes in the running app (http://localhost:3000) and report what was checked.
+  archive:
+    guidance:
+      - Summarize the archive outcome and which specs were synced before finishing.
+
+# Original template comments follow.
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
