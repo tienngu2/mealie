@@ -1,0 +1,15 @@
+---
+description: Mealie project rules
+alwaysApply: true
+---
+
+Read `AGENTS.md` at the repository root before changing code. Key rules:
+
+- Done means `task validate` exits 0 (enforced). `task security` is report-only; add no new findings.
+- Frontend needs Node 22 (`mise exec node@22 -- <cmd>`). `unset VIRTUAL_ENV` before `uv` or `task`.
+- `task ui:test` is watch mode; use `task ui:test:ci`.
+- Do not edit generated files (`frontend/lib/api/types/`, `mealie/schema/*/__init__.py`); run `task dev:generate`.
+- Only edit `en-US` locale files.
+- Use OpenSpec for non-trivial changes (`/opsx-propose`, `/opsx-apply`, `/opsx-verify`, `/opsx-archive`).
+- Do not commit or push unless asked.
+- Agent docs live in `docs/agents/`.
