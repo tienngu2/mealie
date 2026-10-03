@@ -38,6 +38,7 @@ from mealie.schema.recipe.recipe import (
     RecipeSummary,
 )
 from mealie.schema.recipe.recipe_asset import RecipeAsset
+from mealie.schema.recipe.recipe_quality import RecipeQualityCode, RecipeQualityReport
 from mealie.schema.recipe.recipe_scraper import ScrapeRecipeTest
 from mealie.schema.recipe.recipe_suggestion import RecipeSuggestionQuery, RecipeSuggestionResponse
 from mealie.schema.recipe.request_helpers import (
@@ -60,6 +61,7 @@ from mealie.services.recipe.recipe_data_service import (
     NotAnImageError,
     RecipeDataService,
 )
+from mealie.services.recipe.recipe_quality_service import build_report
 from mealie.services.scraper.recipe_bulk_scraper import RecipeBulkScraperService
 from mealie.services.scraper.scraped_extras import ScraperContext
 from mealie.services.scraper.scraper import create_from_html
@@ -319,6 +321,21 @@ class RecipeController(BaseRecipeController):
 
         # Response is returned directly, to avoid validation and improve performance
         return JSONBytes(content=json_compatible_response)
+
+    @router.get("/quality-report", response_model=RecipeQualityReport)
+    def get_quality_report(
+        self,
+        code: list[RecipeQualityCode] | None = Query(None, description="Only list recipes with any of these issues"),
+        page: int = Query(1, ge=1),
+        per_page: int = Query(50, ge=1, le=200, alias="perPage"),
+    ) -> RecipeQualityReport:
+        """
+        Read-only completeness report for the recipes in the current household.
+
+        Declared before `/{slug}` so "quality-report" is never treated as a recipe slug.
+        """
+        recipes = self.recipes.get_quality_inputs()
+        return build_report(recipes, codes=code, page=page, per_page=per_page)
 
     @router.get("/{slug}", response_model=Recipe)
     def get_one(self, slug: str = Path(..., description="A recipe's slug or id")):

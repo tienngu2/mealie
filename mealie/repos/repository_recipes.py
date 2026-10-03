@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from mealie.db.models.household import Household, HouseholdToRecipe
 from mealie.db.models.recipe.category import Category
 from mealie.db.models.recipe.ingredient import RecipeIngredientModel, households_to_ingredient_foods
+from mealie.db.models.recipe.instruction import RecipeInstruction
 from mealie.db.models.recipe.recipe import RecipeModel
 from mealie.db.models.recipe.settings import RecipeSettings
 from mealie.db.models.recipe.tag import Tag
@@ -27,6 +28,7 @@ from mealie.schema.recipe.recipe_suggestion import RecipeSuggestionQuery, Recipe
 from mealie.schema.recipe.recipe_tool import RecipeToolOut
 from mealie.schema.response.pagination import PaginationQuery
 from mealie.schema.response.query_filter import QueryFilterBuilder
+from mealie.services.recipe.recipe_quality_service import IngredientFacts, RecipeQualityInput
 
 from ..db.models._model_base import SqlAlchemyBase
 from .repository_generic import HouseholdRepositoryGeneric
@@ -195,6 +197,78 @@ class RepositoryRecipes(HouseholdRepositoryGeneric[Recipe, RecipeModel]):
             return ids
         additional_ids = self.session.execute(sa.select(model.id).filter(model.slug.in_(slugs))).scalars().all()
         return ids + additional_ids
+
+    def get_quality_inputs(self) -> list[RecipeQualityInput]:
+        """
+        Gather the facts needed by the recipe quality rules for every recipe visible to this repository
+        (scoped by group and, when set, household, exactly like `page_all`).
+
+        Uses three narrow column queries instead of loading full `Recipe` objects, so the cost stays
+        proportional to the amount of text actually inspected.
+        """
+        fltr = self._filter_builder()
+
+        recipe_stmt = sa.select(
+            self.model.id,
+            self.model.slug,
+            self.model.name,
+            self.model.image,
+            self.model.prep_time,
+            self.model.cook_time,
+            self.model.perform_time,
+            self.model.total_time,
+            self.model.recipe_servings,
+            self.model.recipe_yield_quantity,
+            self.model.recipe_yield,
+        ).filter_by(**fltr)
+        recipe_rows = self.session.execute(recipe_stmt).all()
+        if not recipe_rows:
+            return []
+
+        ids = [row.id for row in recipe_rows]
+        ingredients: dict[UUID, list[IngredientFacts]] = {}
+        steps: dict[UUID, list[str | None]] = {}
+
+        # Chunked so very large libraries stay below the database's bound-parameter limit.
+        chunk_size = 500
+        for start in range(0, len(ids), chunk_size):
+            chunk = ids[start : start + chunk_size]
+
+            ingredient_stmt = sa.select(
+                RecipeIngredientModel.recipe_id,
+                RecipeIngredientModel.note,
+                RecipeIngredientModel.food_id,
+                RecipeIngredientModel.unit_id,
+            ).where(RecipeIngredientModel.recipe_id.in_(chunk))
+            for row in self.session.execute(ingredient_stmt):
+                ingredients.setdefault(row.recipe_id, []).append(
+                    IngredientFacts(note=row.note, has_food=row.food_id is not None, has_unit=row.unit_id is not None)
+                )
+
+            step_stmt = sa.select(RecipeInstruction.recipe_id, RecipeInstruction.text).where(
+                RecipeInstruction.recipe_id.in_(chunk)
+            )
+            for row in self.session.execute(step_stmt):
+                steps.setdefault(row.recipe_id, []).append(row.text)
+
+        return [
+            RecipeQualityInput(
+                id=row.id,
+                slug=row.slug or "",
+                name=row.name,
+                image=row.image,
+                prep_time=row.prep_time,
+                cook_time=row.cook_time,
+                perform_time=row.perform_time,
+                total_time=row.total_time,
+                recipe_servings=row.recipe_servings,
+                recipe_yield_quantity=row.recipe_yield_quantity,
+                recipe_yield=row.recipe_yield,
+                ingredients=ingredients.get(row.id, []),
+                step_texts=steps.get(row.id, []),
+            )
+            for row in recipe_rows
+        ]
 
     def page_all(  # type: ignore
         self,

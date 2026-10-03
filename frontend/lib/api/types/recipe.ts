@@ -7,6 +7,14 @@
 
 export type ExportTypes = "json";
 export type RegisteredParser = "nlp" | "brute" | "openai";
+export type RecipeQualityCode =
+  | "no-ingredients"
+  | "no-instructions"
+  | "thin-instructions"
+  | "missing-times"
+  | "missing-yield"
+  | "unparsed-ingredients";
+export type RecipeQualitySeverity = "error" | "warning";
 export type OrderByNullPosition = "first" | "last";
 export type OrderDirection = "asc" | "desc";
 export type TimelineEventType = "system" | "info" | "comment";
@@ -356,6 +364,26 @@ export interface RecipeIngredientBase {
 }
 export interface RecipeLastMade {
   timestamp: string;
+}
+export interface RecipeQualityIssue {
+  code: RecipeQualityCode;
+  severity: RecipeQualitySeverity;
+}
+export interface RecipeQualityItem {
+  recipeId: string;
+  slug: string;
+  name?: string | null;
+  image?: unknown;
+  issues: RecipeQualityIssue[];
+}
+export interface RecipeQualityReport {
+  items: RecipeQualityItem[];
+  total: number;
+  page: number;
+  perPage: number;
+  summary: {
+    [k: string]: number;
+  };
 }
 export interface RecipeShareToken {
   recipeId: string;

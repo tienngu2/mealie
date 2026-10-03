@@ -700,6 +700,23 @@
     "include-linked-recipe-ingredients": "Include Linked Recipe Ingredients",
     "toggle-recipe": "Toggle Recipe"
   },
+  "recipe-quality": {
+    "recipe-quality": "Recipe Quality",
+    "description": "Find recipes that are missing information, such as ingredients, instructions, times or a yield, so you can fix them.",
+    "filter-by-issue": "Filter by issue",
+    "clear-filters": "Clear filters",
+    "all-clear": "Every recipe looks complete. Nothing to fix.",
+    "no-matches": "No recipes have the selected issues.",
+    "load-error": "The quality report could not be loaded.",
+    "retry": "Retry",
+    "issues-count": "{count} issue | {count} issues",
+    "issue-no-ingredients": "No ingredients",
+    "issue-no-instructions": "No instructions",
+    "issue-thin-instructions": "Very short instructions",
+    "issue-missing-times": "No times",
+    "issue-missing-yield": "No yield",
+    "issue-unparsed-ingredients": "Unparsed ingredients"
+  },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",
     "recipe-finder-description": "Search for recipes based on ingredients you have on hand. You can also filter by tools you have available, and set a maximum number of missing ingredients or tools.",

@@ -239,6 +239,12 @@ export default defineNuxtComponent({
         restricted: false,
       },
       {
+        icon: $globals.icons.clipboardCheck,
+        to: `/g/${groupSlug.value}/recipes/quality`,
+        title: i18n.t("recipe-quality.recipe-quality"),
+        restricted: false,
+      },
+      {
         icon: $globals.icons.calendarMultiselect,
         title: i18n.t("meal-plan.meal-planner"),
         to: "/household/mealplan/planner/view",

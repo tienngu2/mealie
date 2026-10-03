@@ -71,6 +71,13 @@ from .recipe_ingredient import (
 )
 from .recipe_notes import RecipeNote
 from .recipe_nutrition import Nutrition
+from .recipe_quality import (
+    RecipeQualityCode,
+    RecipeQualityIssue,
+    RecipeQualityItem,
+    RecipeQualityReport,
+    RecipeQualitySeverity,
+)
 from .recipe_scraper import ScrapeRecipe, ScrapeRecipeBase, ScrapeRecipeData, ScrapeRecipeTest
 from .recipe_settings import RecipeSettings
 from .recipe_share_token import RecipeShareToken, RecipeShareTokenCreate, RecipeShareTokenSave, RecipeShareTokenSummary
@@ -113,6 +120,11 @@ __all__ = [
     "RecipeSuggestionQuery",
     "RecipeSuggestionResponse",
     "RecipeSuggestionResponseItem",
+    "RecipeQualityCode",
+    "RecipeQualityIssue",
+    "RecipeQualityItem",
+    "RecipeQualityReport",
+    "RecipeQualitySeverity",
     "Nutrition",
     "RecipeShareToken",
     "RecipeShareTokenCreate",

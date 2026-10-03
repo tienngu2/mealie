@@ -10,6 +10,8 @@ import type {
   ParsedIngredient,
   UpdateImageResponse,
   RecipeLastMade,
+  RecipeQualityCode,
+  RecipeQualityReport,
   RecipeSuggestionQuery,
   RecipeSuggestionResponse,
   RecipeTimelineEventIn,
@@ -19,6 +21,12 @@ import type {
 import type { ApiRequestInstance, PaginationData } from "~/lib/api/types/non-generated";
 
 export type Parser = "nlp" | "brute" | "openai";
+
+export interface RecipeQualityReportParams {
+  code?: RecipeQualityCode[];
+  page?: number;
+  perPage?: number;
+}
 
 export interface CreateAsset {
   name: string;
@@ -33,6 +41,7 @@ const routes = {
   recipesCreate: `${prefix}/recipes/create`,
   recipesBase: `${prefix}/recipes`,
   recipesSuggestions: `${prefix}/recipes/suggestions`,
+  recipesQualityReport: `${prefix}/recipes/quality-report`,
   recipesTestScrapeUrl: `${prefix}/recipes/test-scrape-url`,
   recipesCreateUrl: `${prefix}/recipes/create/url`,
   recipesCreateUrlBulk: `${prefix}/recipes/create/url/bulk`,
@@ -114,6 +123,16 @@ export class RecipeAPI extends BaseCRUDAPI<CreateRecipe, Recipe, Recipe> {
     return await this.requests.get<RecipeSuggestionResponse>(
       route(routes.recipesSuggestions, { ...q, foods, tools }),
     );
+  }
+
+  async getQualityReport(params: RecipeQualityReportParams = {}) {
+    // `route()` serializes undefined as the string "undefined", so only set params are sent.
+    const query: Record<string, string[] | number> = {};
+    if (params.code?.length) query.code = params.code;
+    if (params.page !== undefined) query.page = params.page;
+    if (params.perPage !== undefined) query.perPage = params.perPage;
+
+    return await this.requests.get<RecipeQualityReport>(route(routes.recipesQualityReport, query));
   }
 
   async createAsset(recipeSlug: string, payload: CreateAsset) {
