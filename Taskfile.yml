@@ -3,10 +3,15 @@
 version: "3"
 vars:
   GREETING: Hello, World!
+  # Uses docker when installed, otherwise podman. Override: task <name> CONTAINER_ENGINE=docker
+  CONTAINER_ENGINE:
+    sh: 'command -v docker >/dev/null 2>&1 && echo docker || echo podman'
 env:
   DEFAULT_GROUP: Home
   DEFAULT_HOUSEHOLD: Family
   PRODUCTION: false
+  # corepack otherwise waits for a download prompt nobody can answer
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
   API_PORT: 9000
   API_DOCS: True
   TOKEN_TIME: 256 # hours
@@ -78,7 +83,7 @@ tasks:
     desc: starts postgres and mailpit containers
     dir: docker
     cmds:
-      - docker compose -f docker-compose.dev.yml up
+      - "{{.CONTAINER_ENGINE}} compose -f docker-compose.dev.yml up"
 
   dev:clean:
     desc: cleans up dev environment !! removes all data files !!
@@ -253,7 +258,7 @@ tasks:
     deps:
        - py:package
     cmds:
-       - docker build --tag mealie:dev --file docker/Dockerfile --build-arg COMMIT={{.GIT_COMMIT}} --build-context packages=dist .
+       - "{{.CONTAINER_ENGINE}} build --tag mealie:dev --file docker/Dockerfile --build-arg COMMIT={{.GIT_COMMIT}} --build-context packages=dist ."
     vars:
       GIT_COMMIT:
         sh: git rev-parse HEAD
@@ -262,4 +267,54 @@ tasks:
     desc: builds and runs the production docker image locally
     dir: docker
     cmds:
-      - docker compose -f docker-compose.yml -p mealie up -d --build
+      - "{{.CONTAINER_ENGINE}} compose -f docker-compose.yml -p mealie up -d --build"
+
+  # ---------------------------------------------------------------------------
+  # Harness tasks: agent-facing validation entry points. See docs/agents/.
+  # ---------------------------------------------------------------------------
+  validate:node:
+    desc: fails unless Node.js is the major version used by upstream CI (22)
+    silent: true
+    cmds:
+      - |
+        node -e "process.exit(process.versions.node.split('.')[0] === '22' ? 0 : 1)" || {
+          echo "ERROR: Node $(node -v) found, Node 22 required."
+          echo "Fix: mise exec node@22 -- task validate   (see .node-version)"
+          exit 1
+        }
+
+  py:format:check:
+    desc: checks python formatting without rewriting files
+    cmds:
+      - uv run ruff format --check .
+
+  ui:prepare:
+    desc: generates .nuxt types and the ESLint config (CI runs this before linting)
+    dir: frontend
+    cmds:
+      - yarn nuxt prepare
+
+  ui:test:ci:
+    desc: runs the frontend tests once and exits (ui:test is watch mode)
+    dir: frontend
+    cmds:
+      - yarn test:ci
+
+  validate:
+    desc: ENFORCED validation, run before every commit (format, lint, types, frontend, then the slow backend tests)
+    cmds:
+      - task: validate:node
+      - task: py:format:check
+      - task: py:lint
+      - task: py:mypy
+      - task: ui:prepare
+      - task: ui:lint
+      - task: ui:test:ci
+      - task: py:test
+
+  security:
+    desc: REPORT-ONLY security scans (bandit, yarn audit, semgrep); findings are logged, never block
+    cmds:
+      - uvx bandit -r mealie -q --exit-zero || true
+      - cd frontend && yarn audit --groups dependencies || true
+      - if command -v semgrep > /dev/null 2>&1; then semgrep scan --config auto --exclude node_modules --exclude apm_modules --exclude .agents --exclude .claude --exclude .codex --exclude .cursor --exclude .venv . || true; else echo "WARNING - semgrep not installed, SAST skipped (brew install semgrep)"; fi

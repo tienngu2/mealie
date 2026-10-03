@@ -1,0 +1,3 @@
+# Pins the toolchain used by `task validate`; upstream CI runs Node 22.
+[tools]
+node = "22"

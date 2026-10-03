@@ -115,6 +115,13 @@ output-format = "concise"
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
+  # Third-party agent skills installed by APM (see docs/agents/conventions/apm-management.md)
+  ".agents",
+  ".claude",
+  ".codex",
+  ".cursor",
+  ".github/skills",
+  "apm_modules",
   ".bzr",
   ".direnv",
   ".eggs",
