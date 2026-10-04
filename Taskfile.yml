@@ -300,6 +300,13 @@ tasks:
     cmds:
       - yarn test:ci
 
+  py:test:utc:
+    desc: runs python tests in UTC like upstream CI (a few scheduler tests fail between 17:00 and 24:00 in US Pacific time otherwise)
+    env:
+      TZ: UTC
+    cmds:
+      - uv run pytest {{ .CLI_ARGS }}
+
   validate:
     desc: ENFORCED validation, run before every commit (format, lint, types, frontend, then the slow backend tests)
     cmds:
@@ -310,7 +317,7 @@ tasks:
       - task: ui:prepare
       - task: ui:lint
       - task: ui:test:ci
-      - task: py:test
+      - task: py:test:utc
 
   security:
     desc: REPORT-ONLY security scans (bandit, yarn audit, semgrep); findings are logged, never block

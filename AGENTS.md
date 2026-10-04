@@ -22,11 +22,11 @@ Run `task` from the repository root. Use `unset VIRTUAL_ENV` if a parent folder 
 
 | Command | Purpose |
 |---|---|
-| `task validate` | **Enforced.** Run before every commit and before saying "done". Node guard, ruff format, ruff, mypy, `nuxt prepare`, ESLint, Vitest, pytest. About 9 minutes: run it detached and read the log |
+| `task validate` | **Enforced.** Run before every commit and before saying "done". Node guard, ruff format, ruff, mypy, `nuxt prepare`, ESLint, Vitest, pytest (in UTC like CI). About 9 minutes: run it detached and read the log |
 | `task security` | Report-only: bandit, `yarn audit`, Semgrep. A change must not add findings |
 | `task py` / `task ui` | Dev servers: backend on :9000, frontend on :3000 |
 | `task dev:generate` | Required after any Pydantic schema change |
-| `task py:test -- <path>` | Focused pytest run |
+| `task py:test -- <path>` | Focused pytest run (`task py:test:utc -- <path>` runs it in UTC, as CI does; needed for scheduler tests in the evening in US time zones) |
 | `task ui:test:ci` | Vitest once (`task ui:test` is watch mode and never exits) |
 | `task py:migrate -- "message"` | New Alembic migration |
 
