@@ -717,6 +717,24 @@
     "issue-missing-yield": "No yield",
     "issue-unparsed-ingredients": "Unparsed ingredients"
   },
+  "recipe-compare": {
+    "compare-recipes": "Compare Recipes",
+    "description": "Pick two recipes to see how their times, servings, yield and ingredients differ.",
+    "recipe-a": "Recipe A",
+    "recipe-b": "Recipe B",
+    "select-two": "Select two recipes to compare them.",
+    "same-recipe": "Select two different recipes to compare.",
+    "load-error": "The recipes could not be loaded.",
+    "retry": "Retry",
+    "details": "Details",
+    "not-set": "Not set",
+    "different": "Different",
+    "in-both": "In both",
+    "only-in": "Only in {name}",
+    "none": "None",
+    "ingredient-counts": "{shared} in both, {onlyA} only in the first, {onlyB} only in the second.",
+    "matching-note": "Ingredients are matched by name, so different spellings or plurals are listed separately. Amounts are compared as written and are not converted or added up."
+  },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",
     "recipe-finder-description": "Search for recipes based on ingredients you have on hand. You can also filter by tools you have available, and set a maximum number of missing ingredients or tools.",

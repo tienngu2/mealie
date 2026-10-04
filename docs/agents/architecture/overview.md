@@ -18,7 +18,7 @@ Layering: controller -> service -> repository. Controllers handle HTTP only; ser
 
 ## Frontend (`frontend/`)
 
-`pages/` (routes), `components/` (Domain/, global/, Layout/ naming rules in `AGENTS.md`), `composables/` (shared state and API logic), `lib/api/` (API clients; `lib/api/types/` is generated), `layouts/`, `middleware/`, `plugins/`, `lang/` (translations), `tests/` (shared test helpers). The recipe quality report is served by `GET /api/recipes/quality-report` (rules in `mealie/services/recipe/recipe_quality_service.py`) and shown on the page `/g/{groupSlug}/recipes/quality`.
+`pages/` (routes), `components/` (Domain/, global/, Layout/ naming rules in `AGENTS.md`), `composables/` (shared state and API logic), `lib/api/` (API clients; `lib/api/types/` is generated), `layouts/`, `middleware/`, `plugins/`, `lang/` (translations), `tests/` (shared test helpers). The recipe quality report is served by `GET /api/recipes/quality-report` (rules in `mealie/services/recipe/recipe_quality_service.py`) and shown on the page `/g/{groupSlug}/recipes/quality`. The recipe comparison page `/g/{groupSlug}/recipes/compare` is frontend only: the logic is in `composables/recipes/use-recipe-compare.ts`, the pickers are `components/Domain/Recipe/RecipeSelect.vue`, and it only reads recipes through the existing `GET /api/recipes` and `GET /api/recipes/{slug}`; the two selected recipes live in the page query (`?a=<slug>&b=<slug>`).
 
 ## Code generation
 

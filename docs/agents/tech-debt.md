@@ -1,6 +1,6 @@
 # Tech debt and security baseline
 
-Measured on 2026-10-03 at upstream commit `7fe358e` with no local changes. `task security` is report-only: a change must not make these numbers worse. Log new debt here instead of fixing unrelated things inline. Re-measured after the Recipe Quality change: the counts below are identical and none of the findings are in the new files.
+Measured on 2026-10-03 at upstream commit `7fe358e` with no local changes. `task security` is report-only: a change must not make these numbers worse. Log new debt here instead of fixing unrelated things inline. Re-measured after the Recipe Quality change and again after the Recipe Comparison change: the counts below are identical and none of the findings are in the new files.
 
 ## Security baseline
 
